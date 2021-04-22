@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "pwa-node",
+      "request": "attach",
+      "name": "attach",
+      "websocketAddress": "ws://127.0.0.1:9229/f432e978-c569-4a41-a469-d3836286deb6"
+    }
+  ]
+}
