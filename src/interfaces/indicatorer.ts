@@ -23,18 +23,12 @@ type MacdOutput = {
 }
 
 export const Indicatorer: Indicatorer = {
-  ema: (source, length) =>
-    source.map((val, i) => {
-      let ema: number
-      // lookback
-      if (i - length >= 0) {
-        const xsource = source.slice(i - length, i)
-        const sma = xsource.reduce((prev, cur) => prev + cur) / length
-        const k = 2 / (length + 1)
-        ema = val * k + sma * (1 - k)
-      }
-      return ema
-    }),
+  ema: (source, length) => {
+    let emaSeries: number[] = []
+    const k = 2 / (length + 1)
+    source.forEach((val, i) => emaSeries.push(val * k + (i === 0 ? 0 : emaSeries[i - 1] * (1 - k))))
+    return emaSeries
+  },
   macd: (source, fastLength = 12, slowLength = 26, signalLength = 9) =>
     macd({
       values: source,
@@ -51,107 +45,48 @@ export const Indicatorer: Indicatorer = {
 
     const macd = emaFastSeries.map((emaFast, i) => emaFast - emaSlowSeries[i])
 
-    let stoK: number[] = [],
-      smoothedStoK: number[] = [],
-      stoD: number[] = [],
-      smoothedStoD: number[] = []
+    let stoKSeries: number[] = [],
+      smoothedStoKSeries: number[] = [],
+      stoDSeries: number[] = [],
+      smoothedStoDSeries: number[] = []
 
     macd.forEach((m, i) => {
-      const xmacd = macd.slice(i, i + length)
+      // lookback
+      const xmacd = macd.slice(i + 1 - length - 1, i + 1)
 
-      const min1 = Math.min(...xmacd)
-      const max1 = Math.max(...xmacd)
+      const low1 = Math.min(...xmacd) // v1
+      const high1 = Math.max(...xmacd) // v2
 
-      stoK.push(max1 - min1 > 0 ? ((m - min1) / (max1 - min1)) * 100 : stoK.slice(-1)[0] || 0)
+      stoKSeries.push(high1 - low1 > 0 ? ((m - low1) / (high1 - low1)) * 100 : stoKSeries.slice(-1)[0] || 0) // f1
 
-      const currentStoK = stoK.slice(-1)[0]
-      const prevSmoothedStoK = smoothedStoK.slice(-1)[0]
+      const currentStoK = stoKSeries.slice(-1)[0]
+      const prevSmoothedStoK = smoothedStoKSeries.slice(-1)[0]
 
-      smoothedStoK.push(
-        !prevSmoothedStoK ? currentStoK : prevSmoothedStoK + factor * (currentStoK - prevSmoothedStoK)
+      smoothedStoKSeries.push(
+        !prevSmoothedStoK ? currentStoK : prevSmoothedStoK + factor * (currentStoK - prevSmoothedStoK) // pf
       )
 
-      const min2 = Math.min(...smoothedStoK)
-      const max2 = Math.max(...smoothedStoK)
-      const currentSmoothedStoK = smoothedStoK.slice(-1)[0]
+      const xsmoothedStoKSeries = smoothedStoKSeries.slice(-length)
 
-      stoD.push(
-        max2 - min2 > 0 ? ((currentSmoothedStoK - min2) / (max2 - min2)) * 100 : stoD.slice(-1)[0] || 0
-      )
+      const low2 = Math.min(...xsmoothedStoKSeries) // v3
+      const high2 = Math.max(...xsmoothedStoKSeries) // v4
 
-      const currentStoD = stoD.slice(-1)[0]
-      const prevSmoothedStoD = smoothedStoD.slice(-1)[0]
+      const currentSmoothedStoK = smoothedStoKSeries.slice(-1)[0]
 
-      smoothedStoD.push(
+      stoDSeries.push(
+        high2 - low2 > 0
+          ? ((currentSmoothedStoK - low2) / (high2 - low2)) * 100
+          : stoDSeries.slice(-1)[0] || 0
+      ) // pff
+
+      const currentStoD = stoDSeries.slice(-1)[0]
+      const prevSmoothedStoD = smoothedStoDSeries.slice(-1)[0]
+
+      smoothedStoDSeries.push(
         !prevSmoothedStoD ? currentStoD : prevSmoothedStoD + factor * (currentStoD - prevSmoothedStoD)
       )
     })
 
-    return emaFastSeries
-
-    // let f1: number[] = [],
-    //   pf: number[] = [],
-    //   f2: number[] = [],
-    //   pff: number[] = []
-
-    // for (let i = 0; i < macd.length; i = i + 1) {
-    //   const _macd = macd.slice(i, i + length).map(({ macd }) => macd)
-
-    //   const v1 = Math.min(..._macd)
-    //   const v2 = Math.max(..._macd) - v1
-
-    //   const previousF1 = f1.slice(-1)[0]
-    //   f1.push(v2 > 0 ? ((_macd[0] - v1) / v2) * 100 : previousF1 || 0)
-
-    //   const previousPf = pf.slice(-1)[0]
-    //   const currentF1 = f1.slice(-1)[0]
-    //   pf.push(!previousPf ? currentF1 : previousPf + factor * (currentF1 - previousPf))
-
-    //   const _pf = pf.slice(-10)
-    //   const v3 = Math.min(..._pf)
-    //   const v4 = Math.max(..._pf) - v3
-
-    //   const currentPf = pf.slice(-1)[0]
-    //   const previousF2 = f2.slice(-1)[0]
-    //   f2.push(v4 > 0 ? ((currentPf - v3) / v4) * 100 : previousF2 || 0)
-
-    //   const previousPff = pff.slice(-1)[0]
-    //   const currentF2 = f2.slice(-1)[0]
-    //   pff.push(!previousPff ? currentF2 : previousPff + factor * (currentF2 - previousPff))
-    // }
-    // return pff
-
-    // let pff: number[] = [],
-    //   f1: number[] = [],
-    //   pf: number[] = [],
-    //   f2: number[] = []
-
-    // for (let i = 0; i < source.length - 1; i = i + 1) {
-    //   const m = macd.slice(i, i + length).map(({ macd }) => macd)
-
-    //   if (m.length > 0) {
-    //     const v1 = Math.min(...m)
-    //     const v2 = Math.max(...m) - v1
-
-    //     f1.push(v2 > 0 ? ((m[i] - v1) / v2) * 100 : f1?.[f1.length - 2] || 0)
-    //     pf.push(
-    //       !pf?.[pf.length - 2]
-    //         ? f1[f1.length - 1]
-    //         : pf[pf.length - 2] + factor * (f1[f1.length - 1] - pf[pf.length - 2])
-    //     )
-
-    //     const _pf = i == 0 ? pf : pf.slice(i - length - 1, i)
-    //     const v3 = Math.min(..._pf)
-    //     const v4 = Math.max(..._pf) - v3
-
-    //     f2.push(v4 > 0 ? ((pf[pf.length - 2] - v3) / v4) * 100 : f2?.[f2.length - 2] || 0)
-    //     pff.push(
-    //       !pff?.[pff.length - 2]
-    //         ? f2[f2.length - 1]
-    //         : pff[pff.length - 2] + factor * (f2[f2.length - 1] - pff[pff.length - 2])
-    //     )
-    //   }
-    // }
-    // return pff
+    return smoothedStoDSeries
   },
 }
