@@ -12,6 +12,7 @@
     "server-dev": "nodemon --watch '**/*.ts' --exec node --inspect -r ts-node/register -r dotenv/config src/index.ts"
   },
   "dependencies": {
+    "@juggle/resize-observer": "^3.3.1",
     "better-sqlite3": "^7.1.5",
     "coinbase-pro-node": "^3.0.1",
     "d3": "^6.7.0",
@@ -30,6 +31,7 @@
     "react-financial-charts": "^1.1.0",
     "react-spring": "^9.1.1",
     "react-table": "^7.6.3",
+    "react-use-measure": "^2.0.4",
     "swr": "^0.5.5",
     "tailwindcss": "^2.1.1",
     "techan": "^0.8.0",

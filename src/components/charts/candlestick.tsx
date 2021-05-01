@@ -11,19 +11,18 @@ import {
   discontinuousTimeScaleProviderBuilder,
   CrossHairCursor,
   BarSeries,
-  LineSeries,
   MouseCoordinateX,
   MouseCoordinateY,
   OHLCTooltip,
   withSize,
 } from 'react-financial-charts'
 
-import { Candle } from '../models'
+import { Candle } from '../../models'
 
 const debug = Debug(`components:basic-candle-stick-chart`)
 
 type BasicCandleStickChartProps = {
-  candles: (Candle & { stc?: number })[]
+  candles: Candle[]
   width: number
   height: number
   ratio: number
@@ -48,9 +47,7 @@ const BasicCandleStickChart = ({
 
   const margin = { left: 0, right: 50, top: 0, bottom: 32 }
   const gridHeight = height - margin.top - margin.bottom
-  const bottomChartHeight = 150
-  const volumeChartHeight = gridHeight / 4
-  const chartHeight = gridHeight - bottomChartHeight
+  const volumeChartHeight = gridHeight / 5
 
   return (
     <ChartCanvas
@@ -68,7 +65,7 @@ const BasicCandleStickChart = ({
       <Chart
         id={2}
         height={volumeChartHeight}
-        origin={(_, h) => [0, h - volumeChartHeight - bottomChartHeight]}
+        origin={(_, h) => [0, h - volumeChartHeight]}
         yExtents={({ volume }) => volume}
       >
         <BarSeries
@@ -78,54 +75,25 @@ const BasicCandleStickChart = ({
           yAccessor={({ volume }) => volume}
         />
       </Chart>
-      <Chart id={1} height={chartHeight} padding={10} yExtents={({ high, low }) => [high, low]}>
+      <Chart id={1} padding={10} yExtents={({ high, low }) => [high, low]}>
         <CandlestickSeries fill={({ close, open }) => (close > open ? '#05ffa6' : '#fe0a6f')} />
-        <MouseCoordinateY rectWidth={margin.right} displayFormat={formatPrice} />
         <YAxis
           showGridLines
           gridLinesStrokeStyle="rgba(255,255,255,.2)"
-          axisAt="right"
-          orient="right"
           strokeStyle="rgba(255,255,255,.5)"
           tickLabelFill="rgba(255,255,255,.6)"
         />
         <XAxis
           showGridLines
-          gridLinesStrokeStyle="rgba(255,255,255,.2)"
-          showTickLabel={false}
-          axisAt="bottom"
-          orient="bottom"
-          strokeStyle="rgba(255,255,255,.5)"
-          tickLabelFill="rgba(255,255,255,.6)"
-        />
-        <OHLCTooltip origin={[8, 44]} labelFill="#fff" textFill="#fff" />
-      </Chart>
-      <CrossHairCursor strokeDasharray="ShortDot" strokeStyle="#5405ff" />
-      <Chart
-        id={3}
-        height={bottomChartHeight}
-        origin={(_, h) => [0, h - bottomChartHeight]}
-        padding={10}
-        yExtents={({ stc }) => stc}
-      >
-        <LineSeries yAccessor={({ stc }) => stc} strokeWidth={2} strokeStyle="#5405ff" />
-        <LineSeries yAccessor={() => 75} strokeDasharray="ShortDot" strokeStyle="#fe0a6f" />
-        <LineSeries yAccessor={() => 25} strokeDasharray="ShortDot" strokeStyle="#05ffa6" />
-        <XAxis
-          showGridLines
-          gridLinesStrokeStyle="rgba(255,255,255,.2)"
-          strokeStyle="rgba(255,255,255,.6)"
-          tickLabelFill="rgba(255,255,255,.6)"
-        />
-        <YAxis
-          ticks={4}
           gridLinesStrokeStyle="rgba(255,255,255,.2)"
           strokeStyle="rgba(255,255,255,.6)"
           tickLabelFill="rgba(255,255,255,.6)"
         />
         <MouseCoordinateX displayFormat={(time) => format(time, ' MMM d   h:mm a ')} />
-        <MouseCoordinateY rectWidth={50} displayFormat={formatPrice} />
+        <MouseCoordinateY rectWidth={margin.right} displayFormat={formatPrice} />
+        <OHLCTooltip origin={[8, 44]} labelFill="#fff" textFill="#fff" />
       </Chart>
+      <CrossHairCursor strokeDasharray="ShortDot" strokeStyle="#5405ff" />
     </ChartCanvas>
   )
 }
