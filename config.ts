@@ -1,17 +1,37 @@
-export const pairs = [
+export const pairs = <const>[
+  'ALGO-USD',
+  'ATOM-USD',
+  'BAL-USD',
+  'BAND-USD',
+  'BCH-USD',
+  'BNT-USD',
   'BTC-USD',
-  'ETH-USD',
+  'COMP-USD',
   'CRV-USD',
-  'LINK-USD',
-  'LTC-USD',
+  'DASH-USD',
+  'EOS-USD',
+  'ETC-USD',
+  'ETH-USD',
+  'GRT-USD',
   'KNC-USD',
+  'LINK-USD',
+  'LRC-USD',
+  'LTC-USD',
+  'MKR-USD',
+  'NMR-USD',
+  'OMG-USD',
+  'OXT-USD',
+  'REN-USD',
+  'REP-USD',
   'SNX-USD',
   'XLM-USD',
   'XTZ-USD',
+  'YFI-USD',
+  'ZEC-USD',
   'ZRX-USD',
 ]
 
-export const periods = [
+export const periods = <const>[
   // minutes
   1 * 60,
   5 * 60,

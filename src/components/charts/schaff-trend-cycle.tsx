@@ -1,4 +1,4 @@
-import { forwardRef, MutableRefObject, useImperativeHandle, useRef, useState } from 'react'
+import React, { forwardRef, MutableRefObject, useImperativeHandle, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import Debug from 'debug'
 import numbro from 'numbro'
@@ -14,26 +14,33 @@ import {
   MouseCoordinateY,
   GenericComponent,
   getMouseCanvas,
-  getAxisCanvas,
   getStrokeDasharrayCanvas,
-  getClosestItem,
 } from 'react-financial-charts'
 import useSWR from 'swr'
 import useMeasure from 'react-use-measure'
 import { ResizeObserver } from '@juggle/resize-observer'
 
-import { ReportApiResponse } from 'src/pages/api/pair/[id]/report'
 import { JSONData } from 'src/types'
 import { formatInterval } from 'src/utils'
 import { useDeviceRatio } from 'src/hooks'
 
 const debug = Debug('components:screener')
 
-type ScreenerProps = {
-  pair: string
+type Report = {
+  time: number
+  value: number
 }
 
-const Screener = ({ pair }: ScreenerProps) => {
+export type SchaffTrendCycleData = {
+  period: number
+  report: Report[]
+}
+
+type SchaffTrendCyclesProps = {
+  data: SchaffTrendCycleData[]
+}
+
+const SchaffTrendCycles = ({ data }: SchaffTrendCyclesProps) => {
   const stcChartCanvasRefs = [
     useRef<ChartCanvasLineHandle>(),
     useRef<ChartCanvasLineHandle>(),
@@ -41,23 +48,16 @@ const Screener = ({ pair }: ScreenerProps) => {
     useRef<ChartCanvasLineHandle>(),
   ]
   const cursorLineTimeRef = useRef<number>()
-
-  // const [cursorLineTime, setCursorLineTime] = useState<number>()
-  const [screenerElRef, screenerElBounds] = useMeasure({ polyfill: ResizeObserver })
+  0
+  const [chartsWrapperElRef, chartsWrapperElBounds] = useMeasure({ polyfill: ResizeObserver })
   const deviceRatio = useDeviceRatio()
 
-  const { data, error } = useSWR<JSONData<ReportApiResponse>>(`api/pair/${pair}/report`, (url) =>
-    fetch(url).then((res) => res.json())
-  )
-
-  if (error) return <div>Failed to load users</div>
-
   return (
-    <div className="flex-grow" ref={screenerElRef}>
+    <div className="flex-grow" ref={chartsWrapperElRef}>
       {!data && <div className="p-2">Loading…</div>}
       {Array.isArray(data) &&
-        data?.map(({ attributes: { period, report } }, i) => (
-          <>
+        data?.map(({ period, report }, i) => (
+          <React.Fragment key={period}>
             <span
               className="absolute z-50 p-2 text-xs"
               style={{
@@ -74,29 +74,20 @@ const Screener = ({ pair }: ScreenerProps) => {
               }
               initialData={report}
               cursorLineTimeRef={cursorLineTimeRef}
-              width={screenerElBounds.width}
-              height={screenerElBounds.height / data.length}
+              width={chartsWrapperElBounds.width}
+              height={chartsWrapperElBounds.height / data.length}
               ratio={deviceRatio}
               ref={stcChartCanvasRefs[i]}
             />
-          </>
+          </React.Fragment>
         ))}
     </div>
   )
 }
 
-export default Screener
+export default SchaffTrendCycles
 
-type CurrentItem = {
-  idx: {
-    index: number
-    level: number
-  }
-  time: number
-  value: number
-}
-
-type ScreenerStcChartProps = {
+type StcChartCanvasProps = {
   index: number
   cursorLineTimeRef: MutableRefObject<number>
   width: number
@@ -113,7 +104,7 @@ type ChartCanvasLineHandle = {
   redrawLine: () => void
 }
 
-const StcChartCanvas = forwardRef<ChartCanvasLineHandle, ScreenerStcChartProps>(
+const StcChartCanvas = forwardRef<ChartCanvasLineHandle, StcChartCanvasProps>(
   ({ index, width, height, ratio, initialData, handleMouseMove, cursorLineTimeRef }, ref) => {
     const myCursorLineTimeRef = useRef<number>()
     const lineRef = useRef<GenericComponent>()
@@ -129,7 +120,7 @@ const StcChartCanvas = forwardRef<ChartCanvasLineHandle, ScreenerStcChartProps>(
     const xExtents = [min, max]
     const formatValue = (value: number) => numbro(value).format({ thousandSeparated: true, mantissa: 0 })
 
-    const margin = { left: 0, right: 50, top: 0, bottom: 32 }
+    const margin = { left: 0, right: 75, top: 0, bottom: 32 }
 
     useImperativeHandle(
       ref,

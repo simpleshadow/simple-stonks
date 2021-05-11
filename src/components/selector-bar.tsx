@@ -1,12 +1,13 @@
 type SelectorBarProps = {
-  labels: string[]
-  selectedIndex: number
+  isVertical?: boolean
+  labels: string[] | readonly string[]
   onSelectionChange: (newIndex: number) => void
+  selectedIndex: number
 }
 
-const SelectorBar = ({ labels, selectedIndex, onSelectionChange }: SelectorBarProps) => {
+const SelectorBar = ({ isVertical, labels, selectedIndex, onSelectionChange }: SelectorBarProps) => {
   return (
-    <div className="flex flex-row items-center text-xs">
+    <div className={`flex ${isVertical ? 'flex-col' : 'flex-row'} flex-wrap items-center text-xs`}>
       {labels.map((label, i) => (
         <div
           key={label}

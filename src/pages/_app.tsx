@@ -1,7 +1,10 @@
 import Head from 'next/head'
-import '../styles/globals.css'
+import { AppProps } from 'next/app'
 
-const MyApp = ({ Component, pageProps }) => (
+import '../styles/globals.css'
+import { SocketContext, sockets } from '../hooks'
+
+const MyApp = ({ Component, pageProps }: AppProps) => (
   <>
     <Head>
       <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -12,7 +15,9 @@ const MyApp = ({ Component, pageProps }) => (
       <meta name="msapplication-TileColor" content="#da532c" />
       <meta name="theme-color" content="#ffffff" />
     </Head>
-    <Component {...pageProps} />
+    <SocketContext.Provider value={sockets}>
+      <Component {...pageProps} />
+    </SocketContext.Provider>
   </>
 )
 

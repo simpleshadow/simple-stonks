@@ -15,6 +15,7 @@ import {
   MouseCoordinateY,
   OHLCTooltip,
   withSize,
+  EdgeIndicator,
 } from 'react-financial-charts'
 
 import { Candle } from '../../models'
@@ -43,11 +44,13 @@ const BasicCandleStickChart = ({
   const min = xAccessor(data[Math.max(0, data.length - 100)])
   const xExtents = [min, max]
 
-  const formatPrice = (value: number) => numbro(value).format({ thousandSeparated: true, mantissa: 0 })
+  const formatPrice = (value: number) => numbro(value).format({ thousandSeparated: true, mantissa: 2 })
 
-  const margin = { left: 0, right: 50, top: 0, bottom: 32 }
+  const margin = { left: 0, right: 75, top: 0, bottom: 32 }
   const gridHeight = height - margin.top - margin.bottom
   const volumeChartHeight = gridHeight / 5
+
+  const getOpenCloseColor = ({ close, open }: Candle) => (close > open ? '#05db61' : '#fe0a6f')
 
   return (
     <ChartCanvas
@@ -82,6 +85,7 @@ const BasicCandleStickChart = ({
           gridLinesStrokeStyle="rgba(255,255,255,.2)"
           strokeStyle="rgba(255,255,255,.5)"
           tickLabelFill="rgba(255,255,255,.6)"
+          tickFormat={formatPrice}
         />
         <XAxis
           showGridLines
@@ -91,6 +95,14 @@ const BasicCandleStickChart = ({
         />
         <MouseCoordinateX displayFormat={(time) => format(time, ' MMM d   h:mm a ')} />
         <MouseCoordinateY rectWidth={margin.right} displayFormat={formatPrice} />
+        <EdgeIndicator
+          itemType="last"
+          rectWidth={margin.right}
+          fill={getOpenCloseColor}
+          lineStroke={getOpenCloseColor}
+          displayFormat={formatPrice}
+          yAccessor={({ close }) => close}
+        />
         <OHLCTooltip origin={[8, 44]} labelFill="#fff" textFill="#fff" />
       </Chart>
       <CrossHairCursor strokeDasharray="ShortDot" strokeStyle="#5405ff" />

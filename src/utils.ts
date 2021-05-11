@@ -15,3 +15,5 @@ export const formatInterval = (minutes: number) => {
   }
   return intervalString
 }
+
+export const roundDownTo = (roundTo: number) => (x: number) => new Date(Math.floor(x / roundTo) * roundTo)

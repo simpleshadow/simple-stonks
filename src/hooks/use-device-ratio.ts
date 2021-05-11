@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default () => {
+const useDeviceRatio = () => {
   const [ratio, setRatio] = useState(1)
   useEffect(() => {
     const canvasEl = document.createElement('canvas')
@@ -21,3 +21,5 @@ export default () => {
 
   return ratio
 }
+
+export default useDeviceRatio
